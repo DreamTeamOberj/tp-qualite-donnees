@@ -2,20 +2,6 @@ const express = require('express');
 const app = express()
 const port = 3000
 
-try {
-    const arretResponse = await fetch('https://data.nantesmetropole.fr/api/records/1.0/search/?dataset=244400404_tan-arrets&q=&rows=10000');
-    const arretData = await arretResponse.json();
-
-    const curcuitResponse = await fetch('https://data.nantesmetropole.fr/api/records/1.0/search/?dataset=244400404_tan-arrets&q=&rows=10000');
-    const circuitData = await curcuitResponse.json();
-}
-
-catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Erreur lors de la récupération des données' });
-}
-
-
 app.get('/', (req, res) => {
     res.send('Hello World!')
 })
@@ -24,15 +10,31 @@ app.listen(port, () => {
     console.log(`API lancée sur http://localhost:${port}`);
 })
 
-app.get('/api/arrets', async (req, res) => {
+app.get('/api/arret', async (req, res) => {
 
     try {
-        const response = await fetch('https://data.nantesmetropole.fr/api/records/1.0/search/?dataset=244400404_tan-arrets&q=&rows=10000');
-        const data = await response.json();
+        const arretResponse = await fetch('https://data.nantesmetropole.fr/api/records/1.0/search/?dataset=244400404_tan-arrets&q=&rows=10000');
+        const arretData = await arretResponse.json();
 
-        res.json(data);
+        const circuitResponse = await fetch('https://data.nantesmetropole.fr/api/records/1.0/search/?dataset=244400404_tan-circuits&q=&rows=10000&facet=route_long_name&facet=route_type');
+        const circuitData = await circuitResponse.json();
+
+        arrets = [];
+
+        arretData.records.map((arret, circuitData) => {
+            if (arret.fields.location_type === "1") {
+                arrets.push({
+                    latitude: arret.fields.stop_coordinates[0],
+                    longitude: arret.fields.stop_coordinates[1],
+                    nom: arret.fields.stop_name,
+                })
+            }
+        })
+
+
+        res.json(arrets);
     }
-    
+
     catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Erreur lors de la récupération des données' });
