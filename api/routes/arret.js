@@ -12,6 +12,8 @@ app.get('/api/arret', async (req, res) => {
                     latitude: arret.fields.stop_coordinates[0],
                     longitude: arret.fields.stop_coordinates[1],
                     nom: arret.fields.stop_name,
+                    id: arret.fields.stop_id
+                    
                 })
             }
         })
