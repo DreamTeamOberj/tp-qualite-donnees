@@ -56,12 +56,10 @@ app.get('/api/circuit', async (req, res) => {
       const circuits = [];
   
       circuitData.records.map((circuit) => {
-        const circuitCoordinates = circuit.fields.shape.coordinates;
         const associatedArrets = arretData.records.filter((arret) => {
-          const arretCoordinates = arret.fields.stop_coordinates;
           if (
-            arretCoordinates[0] === circuitCoordinates[0][0][1] &&
-            arretCoordinates[1] === circuitCoordinates[0][0][0]
+            arret.fields.stop_coordinates[0] === circuit.fields.shape.coordinates[0][0][1] &&
+            arret.fields.stop_coordinates[1] === circuit.fields.shape.coordinates[0][0][0]
           ) {
             return true;
           }
@@ -71,7 +69,7 @@ app.get('/api/circuit', async (req, res) => {
           nom: circuit.fields.route_long_name,
           couleur: `#${circuit.fields.route_color}`,
           type: circuit.fields.route_type,
-          coordinates: circuitCoordinates,
+          coordinates: circuit.fields.shape.coordinates,
           arrets: associatedArrets.map((arret) => ({
             nom: arret.fields.stop_name,
             coordonnees: arret.fields.stop_coordinates,
