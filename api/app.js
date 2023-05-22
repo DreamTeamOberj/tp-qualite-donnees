@@ -42,29 +42,49 @@ app.get('/api/arret', async (req, res) => {
 });
 
 app.get('/api/circuit', async (req, res) => {
-
     try {
-        const circuitResponse = await fetch('https://data.nantesmetropole.fr/api/records/1.0/search/?dataset=244400404_tan-circuits&q=&rows=10000');
-        const circuitData = await circuitResponse.json();
-
-        circuits = []
-
-        circuitData.records.map((circuit) => {
-                circuits.push({
-                    nom: circuit.fields.route_long_name,
-                    couleur: `#${circuit.fields.route_color}`,
-                    coordinates: circuit.fields.shape.coordinates,
-                })
-        })
-        res.json(circuits);
+      const circuitResponse = await fetch(
+        'https://data.nantesmetropole.fr/api/records/1.0/search/?dataset=244400404_tan-circuits&q=&rows=10000'
+      );
+      const circuitData = await circuitResponse.json();
+  
+      const arretResponse = await fetch(
+        'https://data.nantesmetropole.fr/api/records/1.0/search/?dataset=244400404_tan-arrets&q=&rows=10000'
+      );
+      const arretData = await arretResponse.json();
+  
+      const circuits = [];
+  
+      circuitData.records.map((circuit) => {
+        const circuitCoordinates = circuit.fields.shape.coordinates;
+        const associatedArrets = arretData.records.filter((arret) => {
+          const arretCoordinates = arret.fields.stop_coordinates;
+          if (
+            arretCoordinates[0] === circuitCoordinates[0][0][1] &&
+            arretCoordinates[1] === circuitCoordinates[0][0][0]
+          ) {
+            return true;
+          }
+        });
+  
+        circuits.push({
+          nom: circuit.fields.route_long_name,
+          couleur: `#${circuit.fields.route_color}`,
+          type: circuit.fields.route_type,
+          coordinates: circuitCoordinates,
+          arrets: associatedArrets.map((arret) => ({
+            nom: arret.fields.stop_name,
+            coordonnees: arret.fields.stop_coordinates,
+          })),
+        });
+      });
+  
+      res.json(circuits);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: 'Erreur lors de la récupération des données' });
     }
-
-    catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Erreur lors de la récupération des données' });
-    }
-
-});
+  });
 
 
 app.get('/api/users/:id', (req, res) => {
