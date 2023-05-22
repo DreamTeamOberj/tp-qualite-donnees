@@ -53,6 +53,7 @@ app.get('/api/circuit', async (req, res) => {
                 circuits.push({
                     nom: circuit.fields.route_long_name,
                     couleur: `#${circuit.fields.route_color}`,
+                    coordinates: circuit.fields.shape.coordinates,
                 })
         })
         res.json(circuits);
