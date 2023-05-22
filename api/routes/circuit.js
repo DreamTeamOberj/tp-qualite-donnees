@@ -7,15 +7,11 @@ app.get('/api/circuit', async (req, res) => {
         circuit = []
 
         circuitData.records.map((circuit) => {
-            if (circuit.fields.location_type === "1") {
                 circuit.push({
-                    nom: circuit.fields.stop_name,
+                    nom: circuit.fields.route_long_name,
                 })
-            }
         })
-
-
-        res.json(circuits);
+        res.json(circuit);
     }
 
     catch (err) {
