@@ -83,12 +83,17 @@ app.get('/api/circuit', async (req, res) => {
             }
           }
         });
+
+        const listeCordonnees = circuit.fields.shape.coordinates[0]
+        listeCordonnees.forEach(element => {
+          element.reverse()
+        });
   
         circuits.push({
           nom: circuit.fields.route_long_name,
           couleur: `#${circuit.fields.route_color}`,
           type: circuit.fields.route_type,
-          coordinates: circuit.fields.shape.coordinates[0],
+          coordinates: listeCordonnees,
           arrets: associatedArrets.map((arret) => (arret)),
         });
       });
