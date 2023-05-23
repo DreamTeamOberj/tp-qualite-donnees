@@ -92,7 +92,6 @@ app.get('/api/circuit', async (req, res) => {
           arrets: associatedArrets.map((arret) => (arret)),
         });
       });
-    });
 
     res.json(circuits);
   } catch (err) {
