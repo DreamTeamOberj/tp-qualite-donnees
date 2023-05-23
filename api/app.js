@@ -55,9 +55,10 @@ app.get('/api/circuit', async (req, res) => {
   
       const circuits = [];
   
-      circuitData.records.map((circuit) => {
+      circuitData.records.map((circuit) => {        
         const associatedArrets = arretData.records.filter((arret) => {
           if (
+            arret.fields.location_type === "1" &&
             arret.fields.stop_coordinates[0] === circuit.fields.shape.coordinates[0][0][1] &&
             arret.fields.stop_coordinates[1] === circuit.fields.shape.coordinates[0][0][0]
           ) {
