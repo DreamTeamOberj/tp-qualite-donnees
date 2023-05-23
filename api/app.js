@@ -59,39 +59,38 @@ app.get('/api/arret', async (req, res) => {
 });
 
 app.get('/api/circuit', async (req, res) => {
-  try {
-    const circuitResponse = await fetch(
-      'https://data.nantesmetropole.fr/api/records/1.0/search/?dataset=244400404_tan-circuits&q=&rows=10000'
-    );
-    const circuitData = await circuitResponse.json();
-
-    const arretResponse = await fetch(
-      'https://data.nantesmetropole.fr/api/records/1.0/search/?dataset=244400404_tan-arrets&q=&rows=10000'
-    );
-    const arretData = await arretResponse.json();
-
-    const circuits = [];
-
-    circuitData.records.map((circuit) => {
-      const associatedArrets = arretData.records.filter((arret) => {
-        if (
-          arret.fields.location_type === "1" &&
-          arret.fields.stop_coordinates[0] === circuit.fields.shape.coordinates[0][0][1] &&
-          arret.fields.stop_coordinates[1] === circuit.fields.shape.coordinates[0][0][0]
-        ) {
-          return true;
-        }
-      });
-
-      circuits.push({
-        nom: circuit.fields.route_long_name,
-        couleur: `#${circuit.fields.route_color}`,
-        type: circuit.fields.route_type,
-        coordinates: circuit.fields.shape.coordinates,
-        arrets: associatedArrets.map((arret) => ({
-          nom: arret.fields.stop_name,
-          coordonnees: arret.fields.stop_coordinates,
-        })),
+    try {
+      const circuitResponse = await fetch(
+        'https://data.nantesmetropole.fr/api/records/1.0/search/?dataset=244400404_tan-circuits&q=&rows=10000'
+      );
+      const circuitData = await circuitResponse.json();
+  
+      const arretResponse = await fetch(
+        'http://localhost:3000/api/arret'
+      );
+      const arretData = await arretResponse.json();
+  
+      const circuits = [];
+  
+      circuitData.records.map((circuit) => {        
+        const associatedArrets = arretData.filter((arret) => {
+          for (i =0; i<circuit.fields.shape.coordinates[0].length; i++ ){
+            if (
+              arret.latitude === circuit.fields.shape.coordinates[0][i][1] &&
+              arret.longitude === circuit.fields.shape.coordinates[0][i][0]
+            ) {
+              return true;
+            }
+          }
+        });
+  
+        circuits.push({
+          nom: circuit.fields.route_long_name,
+          couleur: `#${circuit.fields.route_color}`,
+          type: circuit.fields.route_type,
+          coordinates: circuit.fields.shape.coordinates[0],
+          arrets: associatedArrets.map((arret) => (arret)),
+        });
       });
     });
 
