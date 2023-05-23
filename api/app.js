@@ -90,7 +90,8 @@ app.get('/api/circuit', async (req, res) => {
         });
   
         circuits.push({
-          nom: circuit.fields.route_long_name,
+          id: circuit.fields.route_short_name,
+          nom: circuit.fields.route_long_name, 
           couleur: `#${circuit.fields.route_color}`,
           type: circuit.fields.route_type,
           coordinates: listeCordonnees,
