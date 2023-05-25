@@ -1,3 +1,4 @@
+const e = require('express');
 const express = require('express');
 const fetch = require('node-fetch');
 const app = express()
@@ -14,9 +15,9 @@ app.listen(port, () => {
 
 function arrayEquals(a, b) {
   return Array.isArray(a) &&
-      Array.isArray(b) &&
-      a.length === b.length &&
-      a.every((val, index) => val === b[index]);
+    Array.isArray(b) &&
+    a.length === b.length &&
+    a.every((val, index) => val === b[index]);
 }
 
 app.get('/api/arret', async (req, res) => {
@@ -51,9 +52,9 @@ app.get('/api/arret', async (req, res) => {
         obj = arret.fields
 
         child["id"] = obj.stop_id
-        child["nom"] = obj.stop_name,
-        child["acces_handicape"] = obj.wheelchair_boarding > 0 ? true : false
-        child["stations"] = []
+        child["nom"] = obj.stop_name
+        child["acces_handicape"] = obj.wheelchair_boarding
+        // child["stations"] = []
 
         const coordonnees = [obj.stop_coordinates[1], obj.stop_coordinates[0]]
         let route_type = "autre"
@@ -73,10 +74,28 @@ app.get('/api/arret', async (req, res) => {
         })
 
         if (child["ligne"]) {
-          if (!arrets[obj.parent_station].enfants[route_type].find(e => e.nom === child.nom)) {
-            child.stations.push({ latitude: obj.stop_coordinates[0], longitude: obj.stop_coordinates[1] })
+
+          if (!arrets[obj.parent_station].enfants[route_type]) {
+            arrets[obj.parent_station].enfants[route_type] = []
+          }
+          if (child.nom == "Commerce") {
+            arrets[obj.parent_station].enfants[route_type].map(e => {
+              console.log(e.ligne.id + " ===== " + child.ligne.id);
+            })
+          }
+
+          if (!arrets[obj.parent_station].enfants[route_type].find(e => e.ligne.id === child.ligne.id)) {
+            if (child.nom == "Commerce") {
+              console.log("PUSH !");
+            }
+            // child.stations.push({ latitude: obj.stop_coordinates[0], longitude: obj.stop_coordinates[1] })
             arrets[obj.parent_station].enfants[route_type].push(child)
           }
+          // else {
+          //   console.log(route_type);
+          //   console.log(arrets[obj.parent_station].enfants[route_type]);
+          //   arrets[obj.parent_station].enfants[route_type].stations.push({ latitude: obj.stop_coordinates[0], longitude: obj.stop_coordinates[1] })
+          // }
         }
       }
     })
