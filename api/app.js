@@ -11,9 +11,22 @@ app.listen(port, () => {
   console.log(`API lancée sur http://localhost:${port}`);
 })
 
+
+function arrayEquals(a, b) {
+  return Array.isArray(a) &&
+      Array.isArray(b) &&
+      a.length === b.length &&
+      a.every((val, index) => val === b[index]);
+}
+
 app.get('/api/arret', async (req, res) => {
 
   try {
+    const circuitResponse = await fetch(
+      'https://data.nantesmetropole.fr/api/records/1.0/search/?dataset=244400404_tan-circuits&q=&rows=10000'
+    );
+    const circuitData = await circuitResponse.json();
+
     const arretResponse = await fetch('https://data.nantesmetropole.fr/api/records/1.0/search/?dataset=244400404_tan-arrets&q=&rows=10000');
     const arretData = await arretResponse.json();
 
@@ -22,29 +35,49 @@ app.get('/api/arret', async (req, res) => {
     arretData.records.map((arret) => {
       if (arret.fields.location_type === "1") {
         obj = arret.fields
-        console.log(obj.stop_id)
         arrets[obj.stop_id] = {
           latitude: obj.stop_coordinates[0],
           longitude: obj.stop_coordinates[1],
           nom: obj.stop_name,
           id: obj.stop_id,
-          enfants: []
+          enfants: {},
         }
       }
     })
 
     arretData.records.map((arret) => {
+      child = {}
       if (arret.fields.location_type === "0") {
         obj = arret.fields
-        console.log(obj.stop_id + " - " + obj.parent_station);
 
-        arrets[obj.parent_station].enfants.push({
-          id: obj.stop_id,
-          nom: obj.stop_name,
-          latitude: obj.stop_coordinates[0],
-          longitude: obj.stop_coordinates[1],
-          acces_handicape: obj.wheelchair_boarding > 0 ? true : false
+        child["id"] = obj.stop_id
+        child["nom"] = obj.stop_name,
+        child["acces_handicape"] = obj.wheelchair_boarding > 0 ? true : false
+        child["stations"] = []
+
+        const coordonnees = [obj.stop_coordinates[1], obj.stop_coordinates[0]]
+        let route_type = "autre"
+
+        circuitData.records.map((circuit) => {
+          circuit.fields.shape.coordinates.map((shape) => {
+            shape.map((coos) => {
+              if (arrayEquals(coos, coordonnees)) {
+                child["ligne"] = {
+                  id: circuit.fields.route_short_name,
+                  nom: circuit.fields.route_long_name
+                }
+                route_type = (circuit.fields.route_type).toLowerCase()
+              }
+            })
+          })
         })
+
+        if (child["ligne"]) {
+          if (!arrets[obj.parent_station].enfants[route_type].find(e => e.nom === child.nom)) {
+            child.stations.push({ latitude: obj.stop_coordinates[0], longitude: obj.stop_coordinates[1] })
+            arrets[obj.parent_station].enfants[route_type].push(child)
+          }
+        }
       }
     })
 
@@ -59,39 +92,39 @@ app.get('/api/arret', async (req, res) => {
 });
 
 app.get('/api/circuit', async (req, res) => {
-    try {
-      const circuitResponse = await fetch(
-        'https://data.nantesmetropole.fr/api/records/1.0/search/?dataset=244400404_tan-circuits&q=&rows=10000'
-      );
-      const circuitData = await circuitResponse.json();
-  
-      const arretResponse = await fetch(
-        'http://localhost:3000/api/arret'
-      );
-      const arretData = await arretResponse.json();
-  
-      const circuits = [];
-  
-      circuitData.records.map((circuit) => {        
-        const associatedArrets = arretData.filter((arret) => {
-          for (i =0; i<circuit.fields.shape.coordinates[0].length; i++ ){
-            if (
-              arret.latitude === circuit.fields.shape.coordinates[0][i][1] &&
-              arret.longitude === circuit.fields.shape.coordinates[0][i][0]
-            ) {
-              return true;
-            }
+  try {
+    const circuitResponse = await fetch(
+      'https://data.nantesmetropole.fr/api/records/1.0/search/?dataset=244400404_tan-circuits&q=&rows=10000'
+    );
+    const circuitData = await circuitResponse.json();
+
+    const arretResponse = await fetch(
+      'http://localhost:3000/api/arret'
+    );
+    const arretData = await arretResponse.json();
+
+    const circuits = [];
+
+    circuitData.records.map((circuit) => {
+      const associatedArrets = arretData.filter((arret) => {
+        for (i = 0; i < circuit.fields.shape.coordinates[0].length; i++) {
+          if (
+            arret.latitude === circuit.fields.shape.coordinates[0][i][1] &&
+            arret.longitude === circuit.fields.shape.coordinates[0][i][0]
+          ) {
+            return true;
           }
-        });
-  
-        circuits.push({
-          nom: circuit.fields.route_long_name,
-          couleur: `#${circuit.fields.route_color}`,
-          type: circuit.fields.route_type,
-          coordinates: circuit.fields.shape.coordinates[0],
-          arrets: associatedArrets.map((arret) => (arret)),
-        });
+        }
       });
+
+      circuits.push({
+        nom: circuit.fields.route_long_name,
+        couleur: `#${circuit.fields.route_color}`,
+        type: circuit.fields.route_type,
+        coordinates: circuit.fields.shape.coordinates[0],
+        arrets: associatedArrets.map((arret) => (arret)),
+      });
+    });
 
     res.json(circuits);
   } catch (err) {
