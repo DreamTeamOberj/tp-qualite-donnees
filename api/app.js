@@ -78,15 +78,15 @@ app.get('/api/arret', async (req, res) => {
           if (!arrets[obj.parent_station].enfants[route_type]) {
             arrets[obj.parent_station].enfants[route_type] = []
           }
-          if (child.nom == "Commerce") {
-            arrets[obj.parent_station].enfants[route_type].map(e => {
-              console.log(e.ligne.id + " ===== " + child.ligne.id);
-            })
-          }
+          // if (child.nom == "Commerce") {
+          //   arrets[obj.parent_station].enfants[route_type].map(e => {
+          //     console.log(e.ligne.id + " ===== " + child.ligne.id);
+          //   })
+          // }
 
           if (!arrets[obj.parent_station].enfants[route_type].find(e => e.ligne.id === child.ligne.id)) {
             if (child.nom == "Commerce") {
-              console.log("PUSH !");
+              // console.log("PUSH !");
             }
             // child.stations.push({ latitude: obj.stop_coordinates[0], longitude: obj.stop_coordinates[1] })
             arrets[obj.parent_station].enfants[route_type].push(child)
