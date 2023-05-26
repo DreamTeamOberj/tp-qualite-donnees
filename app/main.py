@@ -41,7 +41,7 @@ def index():
         lon = arret["longitude"]
 
         stop_name = arret["nom"]
-
+        
         html = ""
 
         if len(arret["lignes"]) != 0:
@@ -60,20 +60,33 @@ def index():
                         icon = folium.Icon(icon='circle', prefix = 'fa')
                     
                 for arret_ligne in transport:
-                    correspondances_str += "<br>" + arret_ligne["nom"]
+                    correspondances_str += "<br>" + arret_ligne["id"] + ' : ' + arret_ligne["nom"]
 
         else:
             icon = folium.Icon(icon='circle', prefix = 'fa')
+
+        acces_handicape = arret["acces_handicape"]
+        
+        if acces_handicape is True:
+            placeHandicape = '<i class="fa-solid fa-wheelchair"></i>'
+        else :
+            placeHandicape = '<i class="fa-regular fa-xmark"></i>'
             
-            #wheelchair_boarding = enfant["acces_handicape"]
-
-
-        html += '''<br>Ligne = '''+stop_name+'''<br>
-        Nom arrêt = '''+stop_name+'''<br>
-        Place handicapées = ''''''<br>
+        html += '''Nom arrêt : '''+stop_name+'''<br>
+        '''+placeHandicape+'''
         Correspondances : '''+ correspondances_str +'''<br>
         '''
-
+        imageCommerce = "<img style='width: 150px; height: 150px' src='https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Crois%C3%A9e_trams_Nantes.jpg/1200px-Crois%C3%A9e_trams_Nantes.jpg'>"
+        imageBouffay = "<img style='width: 150px; height: 150px' src='https://fastly.4sqi.net/img/general/600x600/256867_ARO8HYVlox8bjuhZUwl48RFKo4iOty_H0STsuaUVW6Y.jpg'>"
+        imageMediatheque = "<img style='width: 150px; height: 150px' src='https://i.ytimg.com/vi/LVAb6ktEkn4/maxresdefault.jpg'>"
+        
+        if arret["nom"] == "Commerce" :
+            html += imageCommerce
+        elif arret["nom"] == "Bouffay" :
+            html += imageBouffay
+        elif arret["nom"] == "Médiathèque" :
+            html += imageMediatheque
+            
         iframe = folium.IFrame(html, width=200, height=200)
 
         popup = folium.Popup(iframe)
