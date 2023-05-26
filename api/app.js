@@ -84,6 +84,12 @@ app.get('/api/arret', async (req, res) => {
             })
           })
         })
+
+        Object.keys(arrets[obj.parent_station].lignes).forEach(function(key, index) {
+          arrets[obj.parent_station].lignes[key].map(ligne => {
+            ligne.stations.find(e => e.acces_handicape == 0) ? arrets[obj.parent_station]["acces_handicape"] = false : arrets[obj.parent_station]["acces_handicape"] = true
+          });
+        });
       }
     })
 
