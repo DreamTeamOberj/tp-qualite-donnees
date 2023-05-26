@@ -46,16 +46,17 @@ def index():
         for enfant in enfants:
             stop_name = arret["nom"]
             nom = arret["nom"]
-            acces_handicape = enfant["acces_handicape"]
+            wheelchair_boarding = enfant["acces_handicape"]
 
             html += '''<br>Ligne = '''+stop_name+'''<br>
             Nom arrêt = '''+nom+'''<br>
+            Place handicapées = '''+wheelchair_boarding+'''<br>
             '''
 
-            if acces_handicape == True:
-                html += "Places handicapées : 1"
-            else:
-                html += "Places handicapées : 2"
+            #if acces_handicape == True:
+            #    html += "Places handicapées : 1"
+            #else:
+            #    html += "Places handicapées : 2"
 
         iframe = folium.IFrame(html, width=200, height=200)
 
