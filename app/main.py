@@ -68,15 +68,15 @@ def index():
         acces_handicape = arret["acces_handicape"]
         
         if acces_handicape is True:
-            # placeHandicape = '<i class="fa-solid fa-wheelchair"></i>'
-            placeHandicape = 'CHECK'
+            placeHandicape = "<img style='width: 25px; height: 25px' src='https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Wheelchair_symbol.svg/1795px-Wheelchair_symbol.svg.png'>"
+            # placeHandicape = 'CHECK'
 
         else :
             # placeHandicape = '<i class="fa-regular fa-xmark"></i>'
-            placeHandicape = 'PAS CHECK'
+            placeHandicape = "<img style='width: 25px; height: 25px' src='https://static.thenounproject.com/png/765573-200.png'>"
             
         html += '''Nom arrêt : '''+stop_name+'''<br>
-        '''+placeHandicape+'''
+        '''+placeHandicape+'''<br>
         Correspondances : '''+ correspondances_str +'''<br>
         '''
         imageCommerce = "<img style='width: 150px; height: 150px' src='https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Crois%C3%A9e_trams_Nantes.jpg/1200px-Crois%C3%A9e_trams_Nantes.jpg'>"
