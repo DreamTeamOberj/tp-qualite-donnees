@@ -29,15 +29,59 @@ def index():
         ligne = circuit["coordinates"]
         folium.PolyLine(ligne, color=circuit["couleur"]).add_to(line_cluster)
 
+
     for arret in arrets:
-        stop_name = arret["nom"]
+        #ligne_name = arret["id"]
+        #enfants = arret["enfants"]
+
+        icon = ""
+
         # Coordonnées
         lat = arret["latitude"]
         lon = arret["longitude"]
-        icon = folium.Icon(icon='bus', prefix='fa')
-        popup = "<div>Ligne : test<br><b>"+stop_name+"</b><br>Accèssible PMR</div>"
+
+        stop_name = arret["nom"]
+
+        html = ""
+
+        if len(arret["lignes"]) != 0:
+
+            correspondances_str = ""
+
+            for key, transport in arret["lignes"].items():
+                if (not icon):
+                    if key == "tram":
+                        icon = folium.Icon(icon='train-tram', prefix='fa')
+                    elif key == "bus":
+                        icon = folium.Icon(icon='bus', prefix='fa')
+                    elif key == "ferry":
+                        icon = folium.Icon(icon='ship', prefix='fa')
+                    else:
+                        icon = folium.Icon(icon='circle', prefix = 'fa')
+                    
+                for arret_ligne in transport:
+                    correspondances_str += "<br>" + arret_ligne["nom"]
+
+        else:
+            icon = folium.Icon(icon='circle', prefix = 'fa')
+            
+            #wheelchair_boarding = enfant["acces_handicape"]
+
+
+        html += '''<br>Ligne = '''+stop_name+'''<br>
+        Nom arrêt = '''+stop_name+'''<br>
+        Place handicapées = ''''''<br>
+        Correspondances : '''+ correspondances_str +'''<br>
+        '''
+
+        iframe = folium.IFrame(html, width=200, height=200)
+
+        popup = folium.Popup(iframe)
+
         folium.Marker(
             [lat, lon], popup=popup, tooltip=stop_name, icon=icon
+            # [lat, lon], popup=popup, tooltip=stop_name
+
         ).add_to(marker_cluster)
 
     # Ajouter la légende
