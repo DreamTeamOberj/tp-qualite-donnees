@@ -68,9 +68,12 @@ def index():
         acces_handicape = arret["acces_handicape"]
         
         if acces_handicape is True:
-            placeHandicape = '<i class="fa-solid fa-wheelchair"></i>'
+            # placeHandicape = '<i class="fa-solid fa-wheelchair"></i>'
+            placeHandicape = 'CHECK'
+
         else :
-            placeHandicape = '<i class="fa-regular fa-xmark"></i>'
+            # placeHandicape = '<i class="fa-regular fa-xmark"></i>'
+            placeHandicape = 'PAS CHECK'
             
         html += '''Nom arrêt : '''+stop_name+'''<br>
         '''+placeHandicape+'''

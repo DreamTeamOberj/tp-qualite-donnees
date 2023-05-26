@@ -85,16 +85,20 @@ app.get('/api/arret', async (req, res) => {
           })
         })
 
-        Object.keys(arrets[obj.parent_station].lignes).forEach(function(key, index) {
-          if (arrets[obj.parent_station].lignes.length == 0) {
-            arrets[obj.parent_station]["acces_handicape"] = false
-          }
-          else {
+        let acces_handicape = true
+
+        if (Object.keys(arrets[obj.parent_station].lignes).length === 0) {
+          acces_handicape = false
+        }
+        else {
+          Object.keys(arrets[obj.parent_station].lignes).forEach(function (key, index) {
             arrets[obj.parent_station].lignes[key].map(ligne => {
-              ligne.stations.find(e => e.acces_handicape == 0) ? arrets[obj.parent_station]["acces_handicape"] = false : arrets[obj.parent_station]["acces_handicape"] = true
+              if (ligne.stations.find(e => e.acces_handicape == 0)) { acces_handicape = false }
             });
-          }
-        });
+          });
+        }
+
+        arrets[obj.parent_station]["acces_handicape"] = acces_handicape
       }
     })
 
@@ -109,45 +113,45 @@ app.get('/api/arret', async (req, res) => {
 });
 
 app.get('/api/circuit', async (req, res) => {
-    try {
-      const circuitResponse = await fetch(
-        'https://data.nantesmetropole.fr/api/records/1.0/search/?dataset=244400404_tan-circuits&q=&rows=10000'
-      );
-      const circuitData = await circuitResponse.json();
-  
-      const arretResponse = await fetch(
-        'http://localhost:3000/api/arret'
-      );
-      const arretData = await arretResponse.json();
-  
-      const circuits = [];
-  
-      circuitData.records.map((circuit) => {        
-        const associatedArrets = arretData.filter((arret) => {
-          for (i =0; i<circuit.fields.shape.coordinates[0].length; i++ ){
-            if (
-              arret.latitude === circuit.fields.shape.coordinates[0][i][1] &&
-              arret.longitude === circuit.fields.shape.coordinates[0][i][0]
-            ) {
-              return true;
-            }
-          }
-        });
+  try {
+    const circuitResponse = await fetch(
+      'https://data.nantesmetropole.fr/api/records/1.0/search/?dataset=244400404_tan-circuits&q=&rows=10000'
+    );
+    const circuitData = await circuitResponse.json();
 
-        const listeCordonnees = circuit.fields.shape.coordinates[0]
-        listeCordonnees.forEach(element => {
-          element.reverse()
-        });
-  
-        circuits.push({
-          id: circuit.fields.route_short_name,
-          nom: circuit.fields.route_long_name, 
-          couleur: `#${circuit.fields.route_color}`,
-          type: circuit.fields.route_type,
-          coordinates: listeCordonnees,
-          arrets: associatedArrets.map((arret) => (arret)),
-        });
+    const arretResponse = await fetch(
+      'http://localhost:3000/api/arret'
+    );
+    const arretData = await arretResponse.json();
+
+    const circuits = [];
+
+    circuitData.records.map((circuit) => {
+      const associatedArrets = arretData.filter((arret) => {
+        for (i = 0; i < circuit.fields.shape.coordinates[0].length; i++) {
+          if (
+            arret.latitude === circuit.fields.shape.coordinates[0][i][1] &&
+            arret.longitude === circuit.fields.shape.coordinates[0][i][0]
+          ) {
+            return true;
+          }
+        }
       });
+
+      const listeCordonnees = circuit.fields.shape.coordinates[0]
+      listeCordonnees.forEach(element => {
+        element.reverse()
+      });
+
+      circuits.push({
+        id: circuit.fields.route_short_name,
+        nom: circuit.fields.route_long_name,
+        couleur: `#${circuit.fields.route_color}`,
+        type: circuit.fields.route_type,
+        coordinates: listeCordonnees,
+        arrets: associatedArrets.map((arret) => (arret)),
+      });
+    });
 
     res.json(circuits);
   } catch (err) {
