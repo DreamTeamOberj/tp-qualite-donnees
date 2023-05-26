@@ -41,20 +41,15 @@ app.get('/api/arret', async (req, res) => {
           longitude: obj.stop_coordinates[1],
           nom: obj.stop_name,
           id: obj.stop_id,
-          enfants: {},
+          lignes: {},
         }
       }
     })
 
     arretData.records.map((arret) => {
-      child = {}
+      line = {}
       if (arret.fields.location_type === "0") {
         obj = arret.fields
-
-        child["id"] = obj.stop_id
-        child["nom"] = obj.stop_name
-        child["acces_handicape"] = obj.wheelchair_boarding
-        // child["stations"] = []
 
         const coordonnees = [obj.stop_coordinates[1], obj.stop_coordinates[0]]
         let route_type = "autre"
@@ -63,40 +58,32 @@ app.get('/api/arret', async (req, res) => {
           circuit.fields.shape.coordinates.map((shape) => {
             shape.map((coos) => {
               if (arrayEquals(coos, coordonnees)) {
-                child["ligne"] = {
-                  id: circuit.fields.route_short_name,
-                  nom: circuit.fields.route_long_name
-                }
                 route_type = (circuit.fields.route_type).toLowerCase()
+                if (!arrets[obj.parent_station].lignes[route_type]) {
+                  arrets[obj.parent_station].lignes[route_type] = []
+                }
+                if (arrets[obj.parent_station].lignes[route_type].find(e => e.id === circuit.fields.route_short_name) == undefined) {
+                  arrets[obj.parent_station].lignes[route_type].push({
+                    id: circuit.fields.route_short_name,
+                    nom: circuit.fields.route_long_name,
+                    color: `#${circuit.fields.route_color}`,
+                    stations: []
+                  })
+                }
+
+                if (!arrets[obj.parent_station].lignes[route_type].find(e => e.id === circuit.fields.route_short_name).stations.find(e => e.id === obj.stop_id)) {
+                  arrets[obj.parent_station].lignes[route_type].find(e => e.id === circuit.fields.route_short_name).stations.push({
+                    id: obj.stop_id,
+                    nom: obj.stop_name,
+                    latitude: obj.stop_coordinates[0],
+                    longitude: obj.stop_coordinates[1],
+                    acces_handicape: obj.wheelchair_boarding
+                  })
+                }
               }
             })
           })
         })
-
-        if (child["ligne"]) {
-
-          if (!arrets[obj.parent_station].enfants[route_type]) {
-            arrets[obj.parent_station].enfants[route_type] = []
-          }
-          // if (child.nom == "Commerce") {
-          //   arrets[obj.parent_station].enfants[route_type].map(e => {
-          //     console.log(e.ligne.id + " ===== " + child.ligne.id);
-          //   })
-          // }
-
-          if (!arrets[obj.parent_station].enfants[route_type].find(e => e.ligne.id === child.ligne.id)) {
-            if (child.nom == "Commerce") {
-              // console.log("PUSH !");
-            }
-            // child.stations.push({ latitude: obj.stop_coordinates[0], longitude: obj.stop_coordinates[1] })
-            arrets[obj.parent_station].enfants[route_type].push(child)
-          }
-          // else {
-          //   console.log(route_type);
-          //   console.log(arrets[obj.parent_station].enfants[route_type]);
-          //   arrets[obj.parent_station].enfants[route_type].stations.push({ latitude: obj.stop_coordinates[0], longitude: obj.stop_coordinates[1] })
-          // }
-        }
       }
     })
 
